@@ -30,3 +30,11 @@
 *.exe
 *.out
 *.app
+
+# ide
+venv
+.idea
+
+# gpg
+*.asc
+*.pdf
