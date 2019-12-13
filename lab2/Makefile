@@ -1,10 +1,5 @@
-all: clean nvcc run repr
+all: nvcc run
 run:
-	echo "in.data \nout.data\n3 5" | ./a.out
+	echo "small.data \nout.data\n200 200" | ./a.out
 nvcc:
 	nvcc bilin.cu
-clean:
-	echo ok
-repr:
-	python3 to_hex.py
-

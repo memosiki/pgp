@@ -1,20 +1,18 @@
+import random
+import sys
 
+name = 'big104'
+w = 10000
+h = 10000
 if __name__ == '__main__':
-
-    im = [
-        [0x01020300, 0x04050600, 0x07080900],
-        [0x09080700, 0x06050400, 0x03020100],
-        [0x00000000, 0x14141400, 0x00000000],
-    ]
-
-    with open('in.data', 'wb') as file:
-        w = len(im[0])
-        h = len(im)
+    # name = sys.argv[1]
+    with open(f'{name}.data', 'wb') as file:
         a = w.to_bytes(4, 'little')
         file.write(a)
         a = h.to_bytes(4, 'little')
         file.write(a)
 
-        for y in im:
-            for x in y:
-                file.write(x.to_bytes(4, 'big'))
+        for y in range(w+1):
+            for x in range(h+1):
+                num = random.randint(0x00_0000, 0xff_ffff) << 8
+                file.write(num.to_bytes(4, 'big'))

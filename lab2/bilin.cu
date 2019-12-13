@@ -97,7 +97,17 @@ cudaArray *initialize_texture(uchar4 *data, int w, int h) {
     return texture_arr;
 }
 
-
+uchar4 getp(uchar4 arr[], int x, int y, int w, int h){
+    if (x < 0)
+        x = 0;
+    if (x >= w)
+        x = w-1;
+    if (y < 0)
+        y = 0 ;
+    if (y >= h)
+        y = h-1;
+    return arr[y*w+x];
+}
 int main() {
     char in_name[100];
     char out_name[100];
@@ -112,24 +122,64 @@ int main() {
 
     read_image(in_name, &data, &w, &h);
 
-    cudaArray *tex_arr = initialize_texture(data, w, h);
 
-    uchar4 *dev_arr;
-    CSC(cudaMalloc(&dev_arr, sizeof(uchar4) * w_new * h_new));
 
-    data = (uchar4 *) realloc(data, sizeof(uchar4) * w_new * h_new);
+    uchar4 *new_data = (uchar4 *) realloc(data, sizeof(uchar4) * w_new * h_new);
 
-    kernel << < 256, 256 >> > (dev_arr, w, h, w_new, h_new);
-    CSC(cudaGetLastError());
+//    kernel << < 1, 32 >> > (dev_arr, w, h, w_new, h_new);
 
-    CSC(cudaMemcpy(data, dev_arr, sizeof(uchar4) * w_new * h_new, cudaMemcpyDeviceToHost));
+    clock_t begin = clock();
+
+    ///////////////////////////
+        int idx = 0;
+
+    int i, j;  // current pixel coords
+    float x, y; // float coords of pixel in original image
+    int x0, y0, x1, y1; // coords of points of interpolation
+    float wa, wb, wc, wd; // weights of points of interpolation
+    uchar4 Ia, Ib, Ic, Id; // points of interpolation
+    uchar4 p; // result
+
+    while (idx < w_new * h_new) {
+
+        i = idx % w_new;
+        j = idx / w_new;
+        x = (i + 0.5) * (float(w) / w_new) - 0.5;
+        y = (j + 0.5) * (float(h) / h_new) - 0.5;
+
+        x0 = floorf(x);
+        y0 = floorf(y);
+        x1 = x0 + 1;
+        y1 = y0 + 1;
+
+        Ia = getp(data, x0, y0, w, h);
+        Ib = getp(data, x0, y1, w, h);
+        Ic = getp(data, x1, y0, w, h);
+        Id = getp(data, x1, y1, w, h);
+
+
+        wa = (x1 - x) * (y1 - y);
+        wb = (x1 - x) * (y - y0);
+        wc = (x - x0) * (y1 - y);
+        wd = (x - x0) * (y - y0);
+
+        p.x = floorf(wa * Ia.x + wb * Ib.x + wc * Ic.x + wd * Id.x);
+        p.y = floorf(wa * Ia.y + wb * Ib.y + wc * Ic.y + wd * Id.y);
+        p.z = floorf(wa * Ia.z + wb * Ib.z + wc * Ic.z + wd * Id.z);
+        p.w = 0;
+
+        new_data[idx] = p;
+        idx += 1;
+    }
+    /////////////////////
+  clock_t end = clock();
+  double elapsed_secs = double(end - begin) / CLOCKS_PER_SEC / 1000;
+    fprintf(stderr, "time = %lf\n", elapsed_secs);
+
 
     write_image(out_name, data, w_new, h_new);
 
-    CSC(cudaUnbindTexture(tex));
-    CSC(cudaFreeArray(tex_arr));
-    CSC(cudaFree(dev_arr));
     free(data);
-
+    free(new_data);
     return 0;
 }
