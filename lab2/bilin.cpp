@@ -98,7 +98,9 @@ void write_image(char *filename, uchar4 *data, int w, int h) {
 //    return texture_arr;
 //}
 
-uchar4 getp(uchar4* arr, int x, int y, int w, int h) {
+uchar4 getp(uchar4 arr[], int x, int y, int w, int h) {
+//    printf("%d %d from %d  %d", x, y, y*w+x, w*h);
+
     if (x < 0)
         x = 0;
     if (x >= w)
@@ -107,9 +109,6 @@ uchar4 getp(uchar4* arr, int x, int y, int w, int h) {
         y = 0;
     if (y >= h)
         y = h - 1;
-
-//    printf("%d %d from %d  %d \n", x, y, y*w+x, w*h);
-
     if (y * w + x >= w * h)
         printf("ggggggg");
     return arr[y * w + x];
@@ -130,8 +129,7 @@ int main() {
     read_image(in_name, &data, &w, &h);
 
 
-
-    uchar4 *new_data = (uchar4 *) malloc(sizeof(uchar4) * w_new * h_new);
+    uchar4 *new_data = (uchar4 *) realloc(data, sizeof(uchar4) * w_new * h_new);
 
 //    kernel << < 1, 32 >> > (dev_arr, w, h, w_new, h_new);
 
@@ -148,6 +146,7 @@ int main() {
     uchar4 p; // result
 
     while (idx < w_new * h_new) {
+        printf("%d", idx);
 
         i = idx % w_new;
         j = idx / w_new;
@@ -174,11 +173,8 @@ int main() {
         p.y = floorf(wa * Ia.y + wb * Ib.y + wc * Ic.y + wd * Id.y);
         p.z = floorf(wa * Ia.z + wb * Ib.z + wc * Ic.z + wd * Id.z);
         p.w = 0;
-//        printf("%d\n", idx);
-//        printf("from %d  %d\n", idx, w_new * h_new);
 
         new_data[idx] = p;
-
         idx += 1;
     }
     /////////////////////
@@ -186,7 +182,7 @@ int main() {
 //    while (in != - 1)
 //        in++;
     clock_t end = clock();
-    double elapsed_secs = double(end - begin) / CLOCKS_PER_SEC*1000;
+    double elapsed_secs = double(end - begin) / CLOCKS_PER_SEC;
     fprintf(stderr, "time = %lf\n", elapsed_secs);
 
     struct timeval tm2;

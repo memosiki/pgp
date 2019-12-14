@@ -1,7 +1,7 @@
 import random
 import sys
 
-name = 'big104'
+name = 'big'
 w = 10000
 h = 10000
 if __name__ == '__main__':

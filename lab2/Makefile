@@ -1,5 +1,5 @@
 all: nvcc run
 run:
-	echo "small.data \nout.data\n200 200" | ./a.out
+	echo "bgnt.data \nout.data\n128 128" | ./a.out
 nvcc:
-	nvcc bilin.cu
+	nvcc lab2_checker.cu
