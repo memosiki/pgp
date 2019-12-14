@@ -105,7 +105,9 @@ for row in im:
             )[0][0])
             for j in range(2)
         ]).argmax()
-        for j in range(2):
-            print(np.transpose(px - avg[j]))
+        # for j in range(1,2):
+        #     print(-(
+        #             np.transpose(px - avg[j]) @ cov[j] @ (px - avg[j])
+        #     )[0][0])
         print(ppx(px), a, sep='', end=' ')
     print()
