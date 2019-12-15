@@ -1,5 +1,5 @@
 all: comp
-	cat config3.txt | ./a.out
+	cat config.txt | ./a.out
 comp:
 	nvcc lab4.cu
 mm:
