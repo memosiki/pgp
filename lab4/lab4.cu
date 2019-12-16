@@ -43,24 +43,28 @@ __global__ void print_mat(double* dev_a, int n){
         for (int y = start_y; y < n; y += offset_y)
             printf("%d %d %lf\n", x, y, dev_a[x * MAX_COL + y]);
 }
-__global__ void kernel(double* dev_a, int i, int n, double major_elem){
+__global__ void kernel(double* dev_a, int i, int aligned_i, int n, double major_elem){
     int start_x = gridDim.x * blockIdx.x + threadIdx.x;
-    int start_y = gridDim.y * blockIdx.y + threadIdx.y;
+    int start_y = gridDim.y * blockIdx.y;
+
     int offset_x = gridDim.x * blockDim.x;
     int offset_y = gridDim.y * blockDim.y;
     // for (int y = start_y; y < n; y += offset_y)
     //     for (int x = start_x; x < n; x += offset_x)
     //         printf("%d %d %lf\n", x, y, dev_a[x * MAX_COL + y]);
     double ratio;
-    for (int y = i + 1 + start_y; y < n; y += offset_y){
+    for (int y = aligned_i + start_y; y < n; y += offset_y){
         // printf("%d %lf from %lf / %lf\n", y, ratio, dev_a[i * MAX_COL + y], major_elem);
-        ratio = dev_a[i * MAX_COL + y] / major_elem;
-        for (int x = i + 1 + start_x; x < n; x += offset_x){
+        ratio = dev_a[i * MAX_COL + y] / major_elem; // broadcasted
+        for (int x = aligned_i + start_x; x < n; x += offset_x){
             // printf("rat %lf  = %lf / major at %d %d\n", ratio, dev_a[i * MAX_COL + y], i, y);
-            dev_a[x * MAX_COL + y] -= ratio * dev_a[x * MAX_COL + i];
+            if ( i<x && x<n && i<y && y<n){
+                dev_a[x * MAX_COL + y] -= ratio * dev_a[x * MAX_COL + i];
+            }
             // printf("changing %d %d new %lf  -= %lf %lf\n", x, y, dev_a[x * MAX_COL + y], ratio, dev_a[x * MAX_COL + i]);
             // printf("minus %lf from %d %d rat %lf\n", ratio * dev_a[x * MAX_COL + i], x, y, ratio);
         }
+        __syncthreads();
     }
 }
 double a[MAX_ROW * MAX_COL];
@@ -76,6 +80,13 @@ __host__ int align_n(int n){
             return n + (32 - n % 32);
         return n;
 }
+
+__host__ int align_down(int n){
+    if (n % 32)
+        return n - n % 32;
+    return n;
+}
+
 int main(int argc, char const *argv[]) {
     FILE* inp = stdin;
     if (argc > 1)
@@ -141,7 +152,9 @@ int main(int argc, char const *argv[]) {
             break;
         // print_mat <<< dim3(32, 32), dim3(32, 32) >>> (dev_a, n);
 
-        kernel <<< dim3(32, 32), dim3(32, 32) >>> (dev_a, i, aligned_n, major_elem);
+        kernel <<< dim3(32, 32), 32 >>> (dev_a, i, align_down(i), aligned_n, major_elem);
+        CSC(cudaGetLastError());
+
         // major = i;
         // CSC(cudaMemcpyToSymbol(cur_row, dev_a + major * MAX_ROW , sizeof(double) * n, 0, cudaMemcpyDeviceToDevice));
         // CSC(cudaMemcpy(&major_elem, dev_a + major * MAX_ROW + i , sizeof(double), cudaMemcpyDeviceToHost));
@@ -152,7 +165,6 @@ int main(int argc, char const *argv[]) {
         //
         // //вычитаем из каждой строчки текущую
         // kernel <<< dim3(32, 32), dim3(32, 32) >>> (dev_a, i, n);
-        // CSC(cudaGetLastError());
 
     }
     double ans = sign*exp(det);

@@ -36,6 +36,7 @@ venv
 .idea
 cmake-build-debug
 CMakeLists.txt
+*.data
 
 # gpg
 *.asc
