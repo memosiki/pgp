@@ -37,6 +37,9 @@ venv
 cmake-build-debug
 CMakeLists.txt
 *.data
+*.docx#
+logs
+*.log
 
 # gpg
 *.asc
