@@ -1,11 +1,11 @@
 import warnings
 import numpy as np
 
-n = 10000
+n = 100
 
 
 print(n)
-a = np.random.uniform(0, 0.01, (n, n))
+a = np.random.uniform(-10, 10, (n, n))
 for i in range(n):
     for j in range(n):
         print(f"{a[i][j]:.10e}", end=' ')

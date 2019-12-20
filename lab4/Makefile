@@ -3,7 +3,7 @@ all: comp run
 run:
 	cat  conf4.data | ./a.out
 comp:
-	nvcc lab4.cu
+	nvcc lab4-timings.cu
 mm:
 	g++ memcpy.cpp
 	./a.out

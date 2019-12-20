@@ -2,8 +2,8 @@ import random
 import sys
 
 name = 'big'
-w = 10000
-h = 10000
+w = 1000
+h = 1000
 if __name__ == '__main__':
     # name = sys.argv[1]
     with open(f'{name}.data', 'wb') as file:
