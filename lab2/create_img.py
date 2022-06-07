@@ -12,7 +12,7 @@ if __name__ == '__main__':
         a = h.to_bytes(4, 'little')
         file.write(a)
 
-        for y in range(w+1):
-            for x in range(h+1):
+        for _ in range(w+1):
+            for _ in range(h+1):
                 num = random.randint(0x00_0000, 0xff_ffff) << 8
                 file.write(num.to_bytes(4, 'big'))

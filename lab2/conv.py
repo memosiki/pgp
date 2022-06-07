@@ -20,11 +20,10 @@ pal = [
 ]
 
 def to_img_alfa(src, dst = None):
-	fin = open(src, 'rb')
-	(w, h) = struct.unpack('hi', fin.read(8))
-	buff = ctypes.create_string_buffer(4 * w * h)
-	fin.readinto(buff)
-	fin.close()
+	with open(src, 'rb') as fin:
+		(w, h) = struct.unpack('hi', fin.read(8))
+		buff = ctypes.create_string_buffer(4 * w * h)
+		fin.readinto(buff)
 	img = Image.new('RGB', (w, h))
 	pix = img.load()
 	offset = 0
@@ -41,11 +40,10 @@ def to_img_alfa(src, dst = None):
 
 
 def to_img(src, dst = None):
-	fin = open(src, 'rb')
-	(w, h) = struct.unpack('hi', fin.read(8))
-	buff = ctypes.create_string_buffer(4 * w * h)
-	fin.readinto(buff)
-	fin.close()
+	with open(src, 'rb') as fin:
+		(w, h) = struct.unpack('hi', fin.read(8))
+		buff = ctypes.create_string_buffer(4 * w * h)
+		fin.readinto(buff)
 	img = Image.new('RGB', (w, h))
 	pix = img.load()
 	offset = 0
@@ -62,7 +60,7 @@ def to_img(src, dst = None):
 
 def from_img(src, dst):
 	img = Image.open(src)
-	(w, h) = img.size[0:2]
+	(w, h) = img.size[:2]
 	pix = img.load()
 	buff = ctypes.create_string_buffer(4 * w * h)
 	offset = 0
@@ -73,10 +71,9 @@ def from_img(src, dst):
 			b = chr(pix[i, j][2])
 			struct.pack_into('cccc', buff, offset, r, g, b, '\0')
 			offset += 4;
-	out = open(dst, 'wb')
-	out.write(struct.pack('ii', w, h))
-	out.write(buff.raw)
-	out.close()
+	with open(dst, 'wb') as out:
+		out.write(struct.pack('ii', w, h))
+		out.write(buff.raw)
 
 def main():
 	argv = []

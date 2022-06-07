@@ -65,11 +65,11 @@ gr1 = iter([1, 2, 1, 0, 2, 2, 2, 1])
 gr2 = iter([0, 0, 0, 1, 1, 1, 2, 0])
 groups = [gr1, gr2]
 avg = []
-for j in range(len(groups)):
-    gr = groups[j]
+for group in groups:
+    gr = group
     summ = np.zeros((3, 1))
     npj = 4
-    for i in range(npj):
+    for _ in range(npj):
         y = next(gr)
         x = next(gr)
         p = im[x, y]
@@ -80,11 +80,11 @@ cov = []
 gr1 = iter([1, 2, 1, 0, 2, 2, 2, 1])
 gr2 = iter([0, 0, 0, 1, 1, 1, 2, 0])
 groups = [gr1, gr2]
+npj = 4
 for j in range(len(groups)):
     gr = groups[j]
     summ = np.zeros((3, 3))
-    npj = 4
-    for i in range(npj):
+    for _ in range(npj):
         y = next(gr)
         x = next(gr)
         p = im[x, y]
